@@ -379,6 +379,13 @@ class DeleteProject(PlaygroundHandler):
   def post(self):
     model.DeleteProject(self.user, tree=self.tree, project_id=self.project_id)
 
+class ExpireProject(PlaygroundHandler):
+  
+  def PerformAccessCheck(self):
+    shared.AssertHasProjectWriteAccess(self.request.environ)
+
+  def post(self):
+    print "ExpireProject has been called in playground.py"
 
 class RenameProject(PlaygroundHandler):
   """Handler for renaming a project."""
@@ -494,6 +501,7 @@ app = webapp2.WSGIApplication([
     ('/playground/p/.*/touch', TouchProject),
     ('/playground/p/.*/reset', ResetProject),
     ('/playground/p/.*/download', DownloadProject),
+    ('/playground/p/.*/expire', ExpireProject),
 
     # admin tools
     ('/playground/nuke', Nuke),

@@ -370,6 +370,9 @@ def CreateProject(user, template_url, html_url, project_name,
   user = user.key.get()
   user.projects.append(prj.key)
   user.put()
+
+  url = '/playground/p/{0}/expire'.format(prj.key.id())
+  taskqueue.add(url=url)
   return prj
 
 
