@@ -316,7 +316,7 @@ class CopyProject(PlaygroundHandler):
       Abort(httplib.REQUEST_TIMEOUT, 'Requested template is not yet available. '
                                      'Please try again in 30  seconds.')
     expiration = self.request.data['expiration']
-    project = model.CopyProject(self.user, tp)
+    project = model.CopyProject(self.user, tp, expiration)
     r = self.DictOfProject(project)
     self.response.headers['Content-Type'] = _JSON_MIME_TYPE
     self.response.write(tojson(r))

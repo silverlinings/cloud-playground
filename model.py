@@ -44,6 +44,7 @@ class PlaygroundProject(ndb.Model):
   updated = ndb.DateTimeProperty(required=True, auto_now=True, indexed=False)
   in_progress_task_name = ndb.StringProperty(indexed=False)
   access_key = ndb.StringProperty(required=True, indexed=False)
+  expiration = ndb.IntegerProperty()
 
   @property
   def orderby(self):
@@ -216,12 +217,13 @@ def _CreateProjectTree(project):
   return common.config.CREATE_TREE_FUNC(str(project.key.id()))
 
 @ndb.transactional(xg=True)
-def CopyProject(user, tp):
+def CopyProject(user, tp, expiration):
   project = CreateProject(user=user,
                           template_url=tp.template_url,
                           html_url=tp.html_url,
                           project_name=tp.project_name,
-                          project_description=tp.project_description)
+                          project_description=tp.project_description,
+                          expiration=expiration)
   src_tree = _CreateProjectTree(tp)
   dst_tree = _CreateProjectTree(project)
   CopyTree(dst_tree, src_tree)
@@ -337,7 +339,7 @@ def NewProjectName():
 
 @ndb.transactional(xg=True)
 def CreateProject(user, template_url, html_url, project_name,
-                  project_description, in_progress_task_name=None):
+                  project_description, in_progress_task_name=None, expiration=None):
   """Create a new user project.
 
   Args:
@@ -361,7 +363,8 @@ def CreateProject(user, template_url, html_url, project_name,
                           html_url=html_url,
                           namespace=settings.PLAYGROUND_NAMESPACE,
                           in_progress_task_name=in_progress_task_name,
-                          access_key=secret.GenerateRandomString())
+                          access_key=secret.GenerateRandomString(),
+                          expiration=expiration)
   prj.put()
   # transactional get before update
   user = user.key.get()
