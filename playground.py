@@ -315,6 +315,7 @@ class CopyProject(PlaygroundHandler):
     if not tp or tp.in_progress_task_name:
       Abort(httplib.REQUEST_TIMEOUT, 'Requested template is not yet available. '
                                      'Please try again in 30  seconds.')
+    expiration = self.request.data['expiration']
     project = model.CopyProject(self.user, tp)
     r = self.DictOfProject(project)
     self.response.headers['Content-Type'] = _JSON_MIME_TYPE
