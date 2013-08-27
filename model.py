@@ -5,6 +5,7 @@ import random
 
 from mimic.__mimic import common
 
+import datetime
 import secret
 import settings
 import shared
@@ -264,6 +265,17 @@ def DownloadProject(project_id, project_tree):
     files.append({"path": path, "content": content})
   return {"project_name": project_name, "files": files}
 
+def CheckExpiration(project_id):
+  # project = GetProject(project_id)
+  # expiration_seconds = project.expiration_seconds
+  # now = datetime.datetime.now()
+  # current_expiration_date = project.updated + datetime.timedelta(0, expiration_seconds)
+  # if now > current_expiration_date:
+  #   user = GetOrCreateUser(project.owner)
+  #   DeleteProject()
+  # else:
+  #   ScheduleExpiration(project, expiration_seconds)
+
 def RenameProject(project_id, project_name):
   project = GetProject(project_id)
   project.project_name = project_name
@@ -379,7 +391,16 @@ def CreateProject(user, template_url, html_url, project_name,
   user = user.key.get()
   user.projects.append(prj.key)
   user.put()
+  # call taskqueue to schedule expiration
+  if prj.expiration_seconds: 
+    ScheduleExpiration(prj, expiration_seconds)
   return prj
+
+def ScheduleExpiration(project, expiration_seconds):
+  expiration_url = '/playground/internal/{0}/check_expiration'.format(project.key.id())
+  expiration_date = project.updated + datetime.timedelta(0, project.expiration_seconds)
+  expiration_params = {'project_id': project.key.id()}
+  taskqueue.add(url=expiration_url, eta=expiration_date, params=expiration_params)  
 
 
 @ndb.transactional()
